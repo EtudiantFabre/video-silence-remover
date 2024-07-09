@@ -1,0 +1,156 @@
+{% extends "base.html" %} {% load static %} {% block title %}VideoRemoveSilence
+: Résultat{% endblock %} {% block content %}
+<div class="">
+	<div class="py-8">
+		<div class="mb-2">
+			<h1
+				class="mb-4 text-4xl font-black leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white">
+				Supprimer
+				<mark class="px-2 text-white bg-blue-600 rounded dark:bg-blue-500"
+					>le silence</mark
+				>
+				de ta vidéo
+			</h1>
+			<p
+				class="text-lg font-normal text-gray-900 lg:text-xl dark:text-gray-400">
+				Grâce à ce site, vous pourez gratuitement importer votre vidéo pour la
+				traité. Après quoi, plus de silence dans votre vidéo.
+			</p>
+		</div>
+		<h1 class="text-2xl text-left font-black whitespace-normal">
+			Téleverser la vidéo ci-dessous
+		</h1>
+		<form
+			action="{% url 'upload_video' %}"
+			method="post"
+			enctype="multipart/form-data"
+			class="flex flex-col"
+			id="upload-form">
+			{% csrf_token %}
+			<div class="border px-4 pt-6 pb-14 my-8 rounded-md flex flex-col">
+				<div>
+					<input
+						type="file"
+						name="video"
+						id="video"
+						accept="video/*"
+						class="hidden" />
+					<label
+						for="video"
+						class="bg-gradient-to-r from-blue-600 to-violet-600 text-white p-2 rounded-md cursor-pointer hover:bg-blue-600"
+						>Choisir le Fichier</label
+					>
+					<span
+						id="file-chosen"
+						class="ml-2 text-neutral-300"
+						>Pas encore choisi</span
+					>
+				</div>
+				<div class="grid grid-cols-2 gap-2">
+					<div
+						class="mt-4 hidden"
+						id="video-container">
+						<h3
+							class="text-xl text-center bg-gradient-to-r from-indigo-400 to-cyan-400 px-1 py-2 rounded-md">
+							Téléversé
+						</h3>
+						<video
+							id="video-preview"
+							class="max-w-full rounded-md mt-4 max-h-96 border-2 border-violet-600"
+							controls></video>
+					</div>
+					<div
+						class="mt-4 hidden"
+						id="result-container">
+						<h3
+							class="text-xl text-center bg-gradient-to-r from-fuchsia-600 to-purple-600 px-1 py-2 rounded-md">
+							Traité
+						</h3>
+						<video
+							id="processed-video"
+							class="max-w-full rounded-md mt-4 max-h-96 border-2 border-blue-600"
+							controls></video>
+					</div>
+				</div>
+			</div>
+			<button
+				type="submit"
+				id="bouton-traitement"
+				class="text-white py-4 bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-md">
+				Lancer la suppression de silence
+			</button>
+		</form>
+		<div
+			class="hidden"
+			id="progress-container">
+			<p class="text-center">Traitement en cours...</p>
+			<div class="w-full bg-gray-200 rounded-full">
+				<div
+					id="progress-bar"
+					class="bg-blue-600 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded-full"
+					style="width: 0%">
+					0%
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	const fileInput = document.getElementById('video');
+	const videoPreview = document.getElementById('video-preview');
+	const fileChosen = document.getElementById('file-chosen');
+	const videoContainer = document.getElementById('video-container');
+	const uploadForm = document.getElementById('upload-form');
+	const progressContainer = document.getElementById('progress-container');
+	const progressBar = document.getElementById('progress-bar');
+	const resultContainer = document.getElementById('result-container');
+	const boutonTraitement = document.getElementById('bouton-traitement');
+	const processedVideo = document.getElementById('processed-video');
+
+	fileInput.addEventListener('change', function () {
+		const file = this.files[0];
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = function (e) {
+				videoPreview.src = e.target.result;
+				videoPreview.load();
+				fileChosen.textContent = file.name;
+				videoContainer.classList.remove('hidden');
+			};
+			reader.readAsDataURL(file);
+		}
+	});
+
+	uploadForm.addEventListener('submit', function (event) {
+		event.preventDefault();
+		progressContainer.classList.remove('hidden');
+		boutonTraitement.disabled = true; // Désactiver le bouton de soumission
+		const formData = new FormData(uploadForm);
+		fetch(uploadForm.action, {
+			method: 'POST',
+			body: formData,
+		})
+			.then((response) => response.json())
+			.then((data) => {
+				console.log(data);
+				if (data.original_video_url && data.processed_video_url) {
+					processedVideo.src = data.processed_video_url;
+					resultContainer.classList.remove('hidden');
+				}
+			});
+
+		const interval = setInterval(() => {
+			fetch("{% url 'get_progress' %}")
+				.then((response) => response.json())
+				.then((data) => {
+					const progress = data.progress;
+					progressBar.style.width = progress + '%';
+					progressBar.textContent = Math.round(progress) + '%';
+					if (progress >= 100) {
+						clearInterval(interval);
+					}
+				});
+		}, 1000);
+	});
+</script>
+{% endblock %}

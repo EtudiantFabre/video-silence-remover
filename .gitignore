@@ -1,0 +1,17 @@
+.vercel
+*.log
+*.pyc
+*.mp3
+*.mp4
+__pycache__
+db.sqlite3
+media
+
+# Environments 
+.env 
+.venv 
+env/ 
+venv/ 
+ENV/ 
+env.bak/ 
+venv.bak/ 
