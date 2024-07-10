@@ -1,8 +1,18 @@
 {
-  "routes": [
+	"builds": [
+		{
+			"src": "vc__handler__python",
+			"use": "@vercel/python"
+		}
+	],
+	"routes": [
+		{
+			"src": "/(.*)",
+			"dest": "api/wsgi.py"
+		},
     {
-      "src": "/(.*)",
-      "dest": "api/wsgi.py"
-    }
-  ]
+			"src": "/(.*)",
+			"dest": "vc__handler__python"
+		}
+	]
 }
