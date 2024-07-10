@@ -1,4 +1,3 @@
-{% load static tailwind_tags %}
 <!DOCTYPE html>
 <html lang="en">
 	<head>
@@ -8,7 +7,7 @@
 		<script src="https://cdn.tailwindcss.com"></script>
 		<script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp,container-queries"></script>
 		<title>{% block title %}VideoRemoveSilence{% endblock %}</title>
-		{% tailwind_css %}
+		{% load static %}
 	</head>
 
 	<body class="bg-gradient-to-r from-fuchsia-500 to-cyan-500 font-semibold leading-normal tracking-normal flex flex-col min-h-screen">
