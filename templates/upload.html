@@ -155,5 +155,18 @@
 				});
 		}, 1000);
 	});
+
+	window.addEventListener('beforeunload', function (event) {
+        fetch("{% url 'delete_video' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: new URLSearchParams({
+                'video_path': '{{ processed_video_path }}'
+            })
+        });
+    });
 </script>
 {% endblock %}

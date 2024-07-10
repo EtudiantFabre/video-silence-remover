@@ -11,4 +11,5 @@ urlpatterns = [
        path('', index, name='index'),
        path('upload/', upload_video, name='upload_video'),
        path('progress/', get_progress, name='get_progress'),
+       path('delete_video/', delete_video, name='delete_video'),
    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

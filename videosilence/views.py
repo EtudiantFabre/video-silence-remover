@@ -68,3 +68,16 @@ def remove_silence(video_path, progress_callback=None):
 def get_progress(request):
     global progress
     return JsonResponse({'progress': progress})
+
+
+
+
+def delete_video(request):
+    if request.method == 'POST':
+        video_path = request.POST.get('video_path')
+        print(os.path.exists(video_path))
+        if video_path and os.path.exists(video_path):
+            os.remove(video_path)
+            return JsonResponse({'status': 'success'})
+        return JsonResponse({'status': 'error', 'message': 'File not found'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
