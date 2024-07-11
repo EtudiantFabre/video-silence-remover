@@ -5,6 +5,10 @@ from django.shortcuts import render
 from moviepy.editor import VideoFileClip, concatenate_videoclips
 import datetime
 
+import tempfile
+from io import BytesIO
+from django.core.files.base import ContentFile
+
 progress = 0
 
 def index(request):
@@ -82,6 +86,76 @@ def remove_silence(video_path, progress_callback=None):
     video.close()  # Close the video file
     final_clip.close()  # Close the final clip
     return os.path.join(settings.MEDIA_URL, clean_name)
+
+
+
+"""
+
+
+def upload_video(request):
+    global progress
+    if request.method == 'POST':
+        video_file = request.FILES['video']
+        
+        # Créer un fichier temporaire pour stocker la vidéo téléchargée
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp4") as temp_video_file:
+            temp_video_file.write(video_file.read())
+            temp_video_file_path = temp_video_file.name
+        
+        # Process the video to remove silence
+        def progress_callback(current, total):
+            global progress
+            progress = (current / total) * 100
+        
+        processed_video_path = remove_silence(temp_video_file_path, progress_callback)
+        
+        # Delete the temporary file after processing
+        os.remove(temp_video_file_path)
+        
+        return JsonResponse({
+            'original_video_url': video_file.name,
+            'processed_video_url': processed_video_path
+        })
+    return HttpResponse("Upload a video file.")
+
+
+
+def remove_silence(video_path, progress_callback=None):
+    video = VideoFileClip(video_path)
+    clips = []
+    subclip_duration = 0.25  # Duration of each subclip in seconds
+    total_clips = int(video.duration * 4)
+    total_steps = total_clips + 1  # Include an extra step for concatenation
+    
+    for i, start in enumerate(range(0, total_clips, int(subclip_duration * 4))):
+        subclip = video.subclip(start / 4, min((start + subclip_duration * 4) / 4, video.duration))
+        if subclip.audio is not None and subclip.audio.max_volume() > 0.07:
+            clips.append(subclip)
+        
+        # Update progress
+        if progress_callback:
+            progress_callback(i + 1, total_steps)
+    
+    # Concatenate clips
+    final_clip = concatenate_videoclips(clips)
+    
+    # Update progress for concatenation step
+    if progress_callback:
+        progress_callback(total_steps, total_steps)
+    
+    # Utiliser un flux en mémoire pour enregistrer la vidéo
+    processed_video_stream = BytesIO()
+    final_clip.write_videofile(processed_video_stream, codec='libx264', audio_codec='aac')
+
+    video.close()  # Close the video file
+    final_clip.close()  # Close the final clip
+
+    return processed_video_stream
+"""
+
+
+
+
 
 def get_progress(request):
     global progress
